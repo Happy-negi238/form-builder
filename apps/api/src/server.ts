@@ -5,12 +5,15 @@ import cors from "cors";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { generateOpenApiDocument, createOpenApiExpressMiddleware } from "trpc-to-openapi";
 import { apiReference } from "@scalar/express-api-reference";
+import { clerkMiddleware } from "@clerk/express";
 
 import { serverRouter, createContext } from "@repo/trpc/server";
 
 import { env } from "./env";
 
 export const app = express();
+app.use(clerkMiddleware());
+
 const openApiDocument = generateOpenApiDocument(serverRouter, {
   title: "Streamyst OpenAPI",
   version: "1.0.0",
@@ -20,7 +23,8 @@ const openApiDocument = generateOpenApiDocument(serverRouter, {
 if (env.NODE_ENV !== "prod") {
   app.use(
     cors({
-      origin: "*",
+      origin: env.FRONTEND_URL || "http://localhost:3000",
+      credentials: true,
     }),
   );
 }

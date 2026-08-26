@@ -1,28 +1,56 @@
-import { db } from "@repo/database";
+import { db, eq } from "@repo/database";
 import { usersTable } from "@repo/database/schema";
-import { env } from "../env";
-import { googleOAuth2Client } from "../clients/google-oauth";
-import { GetAuthenticationMethodOutputSchema } from "./model";
+import { CreateUserWithClerkIdInputType, createUserWithClerkIdInput } from "./model";
 
 class UserService {
-  public async getAuthenticationMethods(): Promise<
-    ReadonlyArray<GetAuthenticationMethodOutputSchema>
-  > {
-    const supportedAuthenticationProviders: GetAuthenticationMethodOutputSchema[] = [];
-
-    const isGoogleConfigured = !!(env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET);
-
-    if (isGoogleConfigured) {
-      const url = googleOAuth2Client.generateAuthUrl();
-      supportedAuthenticationProviders.push({
-        provider: "GOOGLE_OAUTH",
-        displayName: "Google",
-        displayText: "Signin with Google",
-        authUrl: url,
-      });
+  private async checkUserExistsByClerkId(clerkId: string) {
+    if (!clerkId) {
+      throw new Error("Clerk Id is required");
     }
 
-    return supportedAuthenticationProviders;
+    const existingUser = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+
+    if (existingUser.length > 0) {
+      throw new Error("User already exists");
+    }
+  }
+
+  public async createUserWithClerkId(payload: CreateUserWithClerkIdInputType) {
+    const { clerkId, email, firstName, role, lastName, profileImageUrl } =
+      await createUserWithClerkIdInput.parseAsync(payload);
+
+    const insertUser = await db
+      .insert(usersTable)
+      .values({
+        clerkId,
+        email,
+        firstName,
+        lastName,
+        profileImageUrl,
+        role,
+      })
+      .onConflictDoUpdate({
+        target: usersTable.clerkId,
+        set: {
+          email,
+          firstName,
+          lastName,
+          profileImageUrl,
+          role,
+        },
+      })
+      .returning({
+        id: usersTable.id,
+        clerkId: usersTable.clerkId,
+      });
+
+    if (insertUser.length === 0 || !insertUser[0]?.id || !insertUser[0].clerkId) {
+      throw new Error("Failed to create user");
+    }
+
+    return {
+      id: insertUser[0].id,
+    };
   }
 }
 
