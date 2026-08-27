@@ -8,6 +8,12 @@ export const createFormInput = z.object({
 
 export type CreateFormInputType = z.infer<typeof createFormInput>;
 
+export const getFromByIdInput = z.object({
+  formId: z.string().describe("Id of the form"),
+});
+
+export type GetFromByIdInputType = z.infer<typeof getFromByIdInput>;
+
 export const listFormByUserIdInput = z.object({
   userId: z.string().describe("User id"),
 });

@@ -1,11 +1,13 @@
-import db, { and, desc, eq } from "@repo/database";
+import db, { and, asc, desc, eq } from "@repo/database";
 import {
   createFormInput,
   CreateFormInputType,
+  getFromByIdInput,
+  GetFromByIdInputType,
   listFormByUserIdInput,
   ListFormByUserIdInputType,
 } from "./model";
-import { formsTable, usersTable } from "@repo/database/schema";
+import { formField, formsTable, usersTable } from "@repo/database/schema";
 
 class FormService {
   private async insertFormValues({ title, description, userId }: CreateFormInputType) {
@@ -44,6 +46,44 @@ class FormService {
     return {
       userId: id,
     };
+  }
+
+  public async getFromById(payload: GetFromByIdInputType) {
+    const { formId } = await getFromByIdInput.parseAsync(payload);
+
+    const result = await db
+      .select({
+        id: formsTable.id,
+        title: formsTable.title,
+        description: formsTable.description,
+        createdAt: formsTable.createdAt,
+        updatedAt: formsTable.updatedAt,
+        field: {
+          id: formField.id,
+          label: formField.label,
+          placeholder: formField.placeholder,
+          description: formField.description,
+          labelKey: formField.labelKey,
+          type: formField.type,
+          index: formField.index,
+          isRequired: formField.isRequired,
+        },
+      })
+      .from(formsTable)
+      .leftJoin(formField, eq(formField.formId, formsTable.id))
+      .where(eq(formsTable.id, formId))
+      .orderBy(asc(formField.index));
+
+    if (result.length === 0) {
+      throw new Error("Not any form exist");
+    }
+
+    const { id, description, createdAt, title, updatedAt } = result[0]!;
+    const fields = result
+      .filter((r) => r.field?.id !== null)
+      .map((r) => r.field as NonNullable<typeof r.field>);
+
+    return { id, description, createdAt, title, updatedAt, fields };
   }
 
   public async createForm(payload: CreateFormInputType) {

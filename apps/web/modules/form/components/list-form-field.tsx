@@ -59,11 +59,11 @@ const ListFormField = ({ formId }: ListFormFieldProps) => {
             <div className="flex items-start gap-3 min-w-0 space-y-1">
               <div className="">
                 <CardTitle className="truncate">{field.label}</CardTitle>
-                <CardDescription>{field.description || "No description"}</CardDescription>
+                <CardDescription className="mt-2">{field.description || "No description"}</CardDescription>
               </div>
               <div className="flex text-xs gap-3">
-                <CardContent className="bg-neutral-700/60 rounded-full px-4 py-0.5 border border-white/10">{field.type}</CardContent>
-                <CardContent className="bg-neutral-700/60 rounded-full px-4 py-0.5 border border-white/10">{field.isRequired ? "Required" : "Not Required"}</CardContent>
+                <CardContent className="bg-neutral-700/60 rounded-full px-2 py-0.5 border border-white/10">{field.type}</CardContent>
+                <CardContent className="bg-neutral-700/60 rounded-full px-2 py-0.5 border border-white/10">{field.isRequired ? "Required" : "Not Required"}</CardContent>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-1">

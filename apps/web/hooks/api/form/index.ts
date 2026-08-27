@@ -1,6 +1,30 @@
 import { trpc } from "~/trpc/client";
 
 // FORM HOOKS
+export const useGetFromById = (formId: string) => {
+  const {
+    data: getFromByIdData,
+    isPending,
+    isError,
+    isFetched,
+    isFetching,
+    status,
+    isSuccess,
+    failureCount,
+  } = trpc.form.getFromById.useQuery({ formId });
+
+  return {
+    getFromByIdData,
+    isPending,
+    isError,
+    isFetched,
+    isFetching,
+    status,
+    isSuccess,
+    failureCount,
+  };
+};
+
 export const useCreateForm = () => {
   const utils = trpc.useUtils();
   const {
@@ -197,5 +221,32 @@ export const useDeleteFormField = () => {
     error,
     failureCount,
     isSuccess,
+  };
+};
+
+// FORM SUBMISSION HOOKS
+export const useFormSubmission = () => {
+  const {
+    mutateAsync: formSubmissionAsync,
+    mutate: formSubmission,
+    isPending,
+    isSuccess,
+    status,
+    isError,
+    isIdle,
+    error,
+    failureCount,
+  } = trpc.form.formSubmission.useMutation();
+
+  return {
+    formSubmissionAsync,
+    formSubmission,
+    isPending,
+    isSuccess,
+    status,
+    isError,
+    isIdle,
+    error,
+    failureCount,
   };
 };

@@ -1,6 +1,6 @@
 import z from "zod";
-import { formFieldService, formService } from "../../services";
-import { authenticationProcedure, router } from "../../trpc";
+import { formFieldService, formService, formSubmissionService } from "../../services";
+import { authenticationProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import {
   createFormFieldInputModel,
@@ -11,8 +11,12 @@ import {
   deleteFormFieldOutputModel,
   deleteFormInputModel,
   deleteFormOutputModel,
+  formSubmissionInputModel,
+  formSubmissionOuputModel,
   getFormFieldInputModel,
   getFormFieldOuputModel,
+  getFromByIdInputModel,
+  getFromByIdOuputModel,
   listFormByUserIdOutputModel,
   updateFormFieldInputModel,
   updateFormFieldOutputModel,
@@ -23,6 +27,24 @@ const getPath = generatePath("/form");
 
 export const formRouter = router({
   // FORM PROCEDURE
+  getFromById: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: getPath("/getFromById"),
+        tags: TAGS,
+      },
+    })
+    .input(getFromByIdInputModel)
+    .output(getFromByIdOuputModel)
+    .query(async ({ input }) => {
+      const { formId } = input;
+
+      const { id, createdAt, description, title, updatedAt, fields } =
+        await formService.getFromById({ formId });
+
+      return { id, createdAt, description, title, updatedAt, fields };
+    }),
 
   createForm: authenticationProcedure
     .meta({
@@ -155,5 +177,23 @@ export const formRouter = router({
       const { fieldId } = input;
       const { id } = await formFieldService.deleteFormField({ fieldId });
       return { id };
+    }),
+
+  // FORM SUBMISSION
+  formSubmission: publicProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/formSubmission"),
+        tags: TAGS,
+      },
+    })
+    .input(formSubmissionInputModel)
+    .output(formSubmissionOuputModel)
+    .mutation(async ({ input }) => {
+      const { formId, values } = input;
+
+      const { formSubmissionId } = await formSubmissionService.formSubmission({ formId, values });
+      return { formSubmissionId };
     }),
 });
