@@ -15,6 +15,8 @@ import {
   formSubmissionOuputModel,
   getFormFieldInputModel,
   getFormFieldOuputModel,
+  getFormSubmissionByIdIntputModel,
+  getFormSubmissionByIdOutputModel,
   getFromByIdInputModel,
   getFromByIdOuputModel,
   listFormByUserIdOutputModel,
@@ -195,5 +197,28 @@ export const formRouter = router({
 
       const { formSubmissionId } = await formSubmissionService.formSubmission({ formId, values });
       return { formSubmissionId };
+    }),
+
+  getFormSubmissionById: authenticationProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        tags: TAGS,
+        path: getPath("/getFormSubmissionById"),
+        protect: true,
+      },
+    })
+    .input(getFormSubmissionByIdIntputModel)
+    .output(getFormSubmissionByIdOutputModel)
+    .query(async ({ input }) => {
+      const { formId } = input;
+
+      const { data } = await formSubmissionService.getFormSubmissionById({ formId });
+      const filterData = data.map((submission) => ({
+        ...submission,
+        values: submission.values ?? [],
+      }));
+
+      return filterData;
     }),
 });

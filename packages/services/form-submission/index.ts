@@ -1,5 +1,10 @@
-import db from "@repo/database";
-import { FormSubmissionInputType, formSubmissionInput } from "./model";
+import db, { eq } from "@repo/database";
+import {
+  FormSubmissionInputType,
+  GetFormSubmissionByIdInputType,
+  formSubmissionInput,
+  getFormSubmissionByIdInputType,
+} from "./model";
 import { formSubmission } from "@repo/database/schema";
 
 class FormSubmissionService {
@@ -16,6 +21,17 @@ class FormSubmissionService {
     }
 
     return { formSubmissionId: result[0].formSubmissionId };
+  }
+
+  public async getFormSubmissionById(payload: GetFormSubmissionByIdInputType) {
+    const { formId } = await getFormSubmissionByIdInputType.parseAsync(payload);
+
+    const result = await db.select().from(formSubmission).where(eq(formSubmission.formId, formId));
+    if (result.length === 0) {
+      throw new Error("Not any submission found");
+    }
+
+    return { data: result };
   }
 }
 

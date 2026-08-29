@@ -250,3 +250,29 @@ export const useFormSubmission = () => {
     failureCount,
   };
 };
+
+export const useGetFromSubmissionById = (formId: string) => {
+  const {
+    data: formSubmissions,
+    error,
+    isFetched,
+    isFetching,
+    isError,
+    failureCount,
+    isPending,
+    status,
+    isSuccess,
+  } = trpc.form.getFormSubmissionById.useQuery({ formId });
+
+  return {
+    formSubmissions,
+    error,
+    isFetched,
+    isFetching,
+    isError,
+    failureCount,
+    isPending,
+    status,
+    isSuccess,
+  };
+};
