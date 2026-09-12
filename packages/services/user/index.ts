@@ -1,6 +1,11 @@
 import { db, eq } from "@repo/database";
 import { usersTable } from "@repo/database/schema";
-import { CreateUserWithClerkIdInputType, createUserWithClerkIdInput } from "./model";
+import {
+  CreateUserWithClerkIdInputType,
+  createUserWithClerkIdInput,
+  getUserByClerkIdInput,
+  GetUserByClerkIdInputType,
+} from "./model";
 
 class UserService {
   private async checkUserExistsByClerkId(clerkId: string) {
@@ -51,6 +56,22 @@ class UserService {
     return {
       id: insertUser[0].id,
     };
+  }
+
+  public async getUserByClerkId(payload: GetUserByClerkIdInputType) {
+    const { clerkId } = await getUserByClerkIdInput.parseAsync(payload);
+
+    if (!clerkId) {
+      throw new Error("Id is not defined");
+    }
+
+    const result = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId));
+
+    if (!result || !result[0]?.role) {
+      throw new Error("User not found with this id");
+    }
+
+    return result;
   }
 }
 

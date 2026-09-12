@@ -1,7 +1,12 @@
 import { userService } from "../../services";
-import { publicProcedure, router } from "../../trpc";
+import { authenticationProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
-import { createUserWithClerkIdInputModel, createUserWithClerkIdOutputModel } from "./model";
+import {
+  createUserWithClerkIdInputModel,
+  createUserWithClerkIdOutputModel,
+  getUserByClerkIdInputModel,
+  getUserByClerkIdOutputModel,
+} from "./model";
 
 const TAGS = ["Authentication"];
 const getPath = generatePath("/authentication");
@@ -29,5 +34,22 @@ export const userRouter = router({
       });
 
       return { id };
+    }),
+
+  getUserByClerkId: authenticationProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: getPath("/getUserByClerkId"),
+        tags: TAGS,
+      },
+    })
+    .input(getUserByClerkIdInputModel)
+    .output(getUserByClerkIdOutputModel)
+    .query(async ({ input }) => {
+      const { clerkId } = input;
+
+      const result = await userService.getUserByClerkId({ clerkId });
+      return result;
     }),
 });

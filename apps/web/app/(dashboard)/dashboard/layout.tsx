@@ -5,8 +5,10 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "~/components/ui/sidebar"
+import { requireAuth } from '~/modules/authentication/actions'
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
+  await requireAuth();
   return (
     <SidebarProvider
       style={{

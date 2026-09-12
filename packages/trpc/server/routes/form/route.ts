@@ -3,6 +3,10 @@ import { formFieldService, formService, formSubmissionService } from "../../serv
 import { authenticationProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import {
+  bulkUpsertFormFieldInputModel,
+  bulkUpsertFormFieldOutputModel,
+  checkFromPasswordInputModel,
+  checkFromPasswordOutputModel,
   createFormFieldInputModel,
   createFormFieldOutputModel,
   createFormInputModel,
@@ -42,10 +46,27 @@ export const formRouter = router({
     .query(async ({ input }) => {
       const { formId } = input;
 
-      const { id, createdAt, description, title, updatedAt, fields } =
+      const { id, createdAt, description, title, updatedAt, fields, expireAt, isPrivate, status } =
         await formService.getFromById({ formId });
 
-      return { id, createdAt, description, title, updatedAt, fields };
+      return { id, createdAt, description, title, updatedAt, fields, expireAt, isPrivate, status };
+    }),
+
+  checkFromPassword: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        tags: TAGS,
+        path: getPath("/checkFromPassword"),
+      },
+    })
+    .input(checkFromPasswordInputModel)
+    .output(checkFromPasswordOutputModel)
+    .query(async ({ input }) => {
+      const { formId, password } = input;
+
+      const data = await formService.checkFromPassword({ formId, password });
+      return data;
     }),
 
   createForm: authenticationProcedure
@@ -60,9 +81,18 @@ export const formRouter = router({
     .input(createFormInputModel)
     .output(createFormOutputModel)
     .mutation(async ({ input, ctx }) => {
-      const { description, title } = input;
+      const { description, title, expireAt, isPrivate, password, responseLimit, status } = input;
 
-      const { id } = await formService.createForm({ description, title, userId: ctx.userId });
+      const { id } = await formService.createForm({
+        description,
+        title,
+        userId: ctx.userId,
+        expireAt,
+        isPrivate,
+        password,
+        responseLimit,
+        status,
+      });
       return {
         id,
       };
@@ -138,6 +168,27 @@ export const formRouter = router({
       const { formId } = input;
       const { data } = await formFieldService.getFormField({ formId });
       return data;
+    }),
+
+  bulkUpsertFormField: authenticationProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/bulkUpsertFormField"),
+        tags: TAGS,
+        protect: true,
+      },
+    })
+    .input(bulkUpsertFormFieldInputModel)
+    .output(bulkUpsertFormFieldOutputModel)
+    .mutation(async ({ input }) => {
+      const { formId, fields } = input;
+      const { data } = await formFieldService.bulkUpsertFormFields({
+        formId,
+        fields,
+      });
+
+      return { data };
     }),
 
   updateFormField: authenticationProcedure

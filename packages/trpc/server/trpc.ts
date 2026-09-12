@@ -23,3 +23,16 @@ export const authenticationProcedure = tRPCContext.procedure.use(async ({ ctx, n
     ctx: { clerkId, userId },
   });
 });
+
+export const adminAuthenticateProcedure = tRPCContext.procedure.use(async ({ ctx, next }) => {
+  const { authenticateAdmin } = ctx;
+  const { role, clerkId } = await authenticateAdmin();
+
+  if (role !== "ADMIN" || !clerkId) {
+    throw new Error("Admin is not found");
+  }
+
+  return next({
+    ctx: { role, clerkId },
+  });
+});

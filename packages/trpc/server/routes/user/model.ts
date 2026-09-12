@@ -13,3 +13,21 @@ export const createUserWithClerkIdInputModel = z.object({
 export const createUserWithClerkIdOutputModel = z.object({
   id: z.string().describe("user created id"),
 });
+
+export const getUserByClerkIdInputModel = z.object({
+  clerkId: z.string().describe("Clerk Id of user"),
+});
+
+export const getUserByClerkIdOutputModel = z.array(
+  z.object({
+    id: z.string(),
+    clerkId: z.string(),
+    firstName: z.string().nullable(),
+    lastName: z.string().nullable(),
+    email: z.string(),
+    profileImageUrl: z.string().nullable(),
+    role: z.enum(["ADMIN", "USER"]).nullable(),
+    createdAt: z.date().nullable(),
+    updatedAt: z.date().nullable(),
+  }),
+);

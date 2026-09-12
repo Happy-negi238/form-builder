@@ -25,15 +25,53 @@ export const getFromByIdOuputModel = z
     id: z.string().describe("Id of the form"),
     title: z.string().describe("Title of the form"),
     description: z.string().nullable().optional().describe("Description of the form"),
-    createdAt: z.date().nullable(),
-    updatedAt: z.date().nullable(),
-    fields: z.array(getFormFieldOutputModel),
+    createdAt: z.date().nullable().describe("when form is created"),
+    updatedAt: z.date().nullable().describe("when form is update"),
+    fields: z.array(getFormFieldOutputModel).describe("form fields"),
+    isPrivate: z.boolean().default(false).describe("form is private or not"),
+    expireAt: z.date().nullable().describe("expire date of the form"),
+    status: z
+      .enum(["publish", "unpublish", "closed"])
+      .default("publish")
+      .nullable()
+      .describe("current status of the form"),
   })
   .nullable();
+
+export const checkFromPasswordInputModel = z.object({
+  password: z.string().describe("password of the form"),
+  formId: z.string().describe("Id of the form"),
+});
+
+export const checkFromPasswordOutputModel = z.object({
+  data: z.string().describe("meesage while form password is checking"),
+});
 
 export const createFormInputModel = z.object({
   title: z.string().max(70).describe("title of the form"),
   description: z.string().max(200).describe("Description of the form"),
+  expireAt: z.coerce.date().nullable().optional().describe("expire time of the form"),
+  status: z
+    .enum(["unpublish", "publish", "closed"])
+    .nullable()
+    .optional()
+    .default("publish")
+    .describe("status of the form"),
+  responseLimit: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional()
+    .describe("response limit of the value"),
+  isPrivate: z.boolean().default(false).describe("private value of the form"),
+  password: z
+    .string()
+    .min(8)
+    .max(100)
+    .nullable()
+    .optional()
+    .describe("raw password for a private form"),
 });
 
 export const createFormOutputModel = z.object({
@@ -54,8 +92,16 @@ export const listFormByUserIdOutputModel = z.array(
     title: z.string().describe("title of the form"),
     description: z.string().describe("description of the form").nullable(),
     userId: z.string().describe("id of the user"),
-    createdAt: z.date().nullable(),
-    updatedAt: z.date().nullable(),
+    expireAt: z.date().nullable().describe("expire time of the form"),
+    status: z
+      .enum(["unpublish", "publish", "closed"])
+      .nullable()
+      .default("publish")
+      .describe("status of the form"),
+    responseLimit: z.number().nullable().describe("response limit of the value"),
+    isPrivate: z.boolean().default(false).describe("private value of the form"),
+    createdAt: z.date().nullable().describe("created at of the form"),
+    updatedAt: z.date().nullable().describe("updated at time of the form"),
   }),
 );
 
@@ -68,6 +114,41 @@ export const createFormFieldInputModel = z.object({
   placeholder: z.string().max(70).optional().describe("Placeholder for the field"),
   description: z.string().max(100).optional().describe("Description of the field"),
   isRequired: z.boolean().default(false).optional().describe("Wheather the field is required"),
+});
+
+export const bulkUpsertFormFieldItemInputModel = z.object({
+  id: z
+    .string()
+    .uuid()
+    .nullable()
+    .optional()
+    .describe("Field ID when updating, null or omitted when creating"),
+  label: z.string().min(2).max(70).describe("Label for the field"),
+  type: fieldTypeEnum
+    .optional()
+    .default("TEXT")
+    .describe("Field type; defaults to TEXT when omitted"),
+  placeholder: z.string().max(70).nullable().optional().describe("Placeholder for the field"),
+  isRequired: z.boolean().default(false).optional().describe("Whether the field is required"),
+  desc: z.string().max(100).nullable().optional().describe("Description of the field"),
+  description: z.string().max(100).nullable().optional().describe("Alias description of the field"),
+});
+
+export const bulkUpsertFormFieldInputModel = z.object({
+  formId: z.string().describe("UUID of the form this field belongs to"),
+  fields: z.array(bulkUpsertFormFieldItemInputModel).min(1).describe("List of fields to upsert"),
+});
+
+export const bulkUpsertFormFieldOutputModel = z.object({
+  data: z.array(
+    z.object({
+      id: z.string().describe("UUID of the form field"),
+      label: z.string().describe("Label of the form field"),
+      placeholder: z.string().nullable().describe("Placeholder of the form field"),
+      description: z.string().nullable().describe("Description of the form field"),
+      isRequired: z.boolean().describe("Whether the form field is required"),
+    }),
+  ),
 });
 
 export const createFormFieldOutputModel = z.object({

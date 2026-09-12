@@ -1,5 +1,8 @@
 import db, { desc, eq, max } from "@repo/database";
+import { formField } from "@repo/database/schema";
 import {
+  bulkUpsertFormFieldInput,
+  BulkUpsertFormFieldInputType,
   createFormFieldInput,
   CreateFormFieldInputType,
   deleteFormFieldInput,
@@ -9,7 +12,6 @@ import {
   updateFormFieldInput,
   UpdateFormFieldInputType,
 } from "./model";
-import { formField } from "@repo/database/schema";
 
 class FormFieldService {
   private async getNextIndex(formId: string): Promise<string> {
@@ -36,16 +38,80 @@ class FormFieldService {
   public async getFormField(payload: GetFormFieldInputType) {
     const { formId } = await getFormFieldInput.parseAsync(payload);
 
-    const result = await db
-      .select()
-      .from(formField)
-      .where(eq(formField.formId, formId))
+    const result = await db.select().from(formField).where(eq(formField.formId, formId));
 
     if (result.length === 0 || !result[0]?.id) {
-      throw new Error(`Form with this id ${formId} does not exist`);
+      throw new Error(`Form field with this id ${formId} does not exist`);
     }
 
     return { data: result };
+  }
+
+  public async bulkUpsertFormFields(payload: BulkUpsertFormFieldInputType) {
+    const { formId, fields } = await bulkUpsertFormFieldInput.parseAsync(payload);
+
+    const results = await Promise.all(
+      fields.map(async (field) => {
+        const label = field.label.trim();
+        const type = field.type ?? "TEXT";
+        const placeholder = field.placeholder ?? null;
+        const description = field.desc ?? field.description ?? null;
+        const isRequired = field.isRequired ?? false;
+
+        const baseValues = {
+          formId,
+          label,
+          labelKey: this.toLabelKey(label),
+          type,
+          placeholder,
+          description,
+          isRequired,
+          index: await this.getNextIndex(formId),
+        };
+
+        const upsertValues = field.id
+          ? {
+              ...baseValues,
+              id: field.id,
+            }
+          : baseValues;
+
+        const result = await db
+          .insert(formField)
+          .values(upsertValues)
+          .onConflictDoUpdate({
+            target: formField.id,
+            set: {
+              label,
+              type,
+              placeholder,
+              description,
+              isRequired,
+            },
+          })
+          .returning({
+            id: formField.id,
+            label: formField.label,
+            placeholder: formField.placeholder,
+            description: formField.description,
+            isRequired: formField.isRequired,
+          });
+
+        if (result.length === 0 || !result[0]?.id) {
+          throw new Error(`Something went wrong while upserting field for form ${formId}`);
+        }
+
+        return {
+          id: result[0].id,
+          label: result[0].label,
+          placeholder: result[0].placeholder,
+          description: result[0].description,
+          isRequired: result[0].isRequired,
+        };
+      })
+    );
+
+    return { data: results };
   }
 
   public async createFormField(payload: CreateFormFieldInputType) {

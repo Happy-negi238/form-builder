@@ -11,7 +11,7 @@ const FormsPage = () => {
             Create and manage your forms.
           </p>
         </div>
-        <CreateForm />
+        {/* <CreateForm /> */}
       </div>
 
       <ListForms />

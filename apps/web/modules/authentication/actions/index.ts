@@ -1,5 +1,6 @@
 "use server";
-import { currentUser } from "@clerk/nextjs/server";
+import { currentUser, auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export type AuthenticatedUser = {
   clerkId: string;
@@ -10,7 +11,6 @@ export type AuthenticatedUser = {
 } | null;
 
 export const onBoardUser = async (): Promise<AuthenticatedUser | null> => {
-  console.log("call action");
   const user = await currentUser();
 
   if (!user) {
@@ -26,4 +26,14 @@ export const onBoardUser = async (): Promise<AuthenticatedUser | null> => {
     firstName: firstName || "",
     lastName: lastName || "",
   };
+};
+
+export const requireAuth = async () => {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+  
+  return null;
 };

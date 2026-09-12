@@ -17,3 +17,9 @@ export const generateUserTokenPayload = z.object({
 });
 
 export type GenerateUserTokenPayloadType = z.infer<typeof generateUserTokenPayload>;
+
+export const getUserByClerkIdInput = z.object({
+  clerkId: z.string().nullable().describe("Clerk Id of user"),
+});
+
+export type GetUserByClerkIdInputType = z.infer<typeof getUserByClerkIdInput>;

@@ -25,6 +25,42 @@ export const useGetFromById = (formId: string) => {
   };
 };
 
+export const useCheckFormPassword = (
+  formId: string,
+  password: string,
+  enabled: boolean = false,
+) => {
+  const {
+    data: getCheckFormPassword,
+    isPending,
+    isError,
+    error,
+    isFetched,
+    isFetching,
+    status,
+    isSuccess,
+    failureCount,
+  } = trpc.form.checkFromPassword.useQuery(
+    { formId, password },
+    {
+      enabled: enabled && Boolean(formId) && Boolean(password),
+      retry: false,
+    },
+  );
+
+  return {
+    getCheckFormPassword,
+    isPending,
+    isError,
+    error,
+    isFetched,
+    isFetching,
+    status,
+    isSuccess,
+    failureCount,
+  };
+};
+
 export const useCreateForm = () => {
   const utils = trpc.useUtils();
   const {
@@ -214,6 +250,38 @@ export const useDeleteFormField = () => {
   return {
     deleteFormFieldAsync,
     deleteFormField,
+    isError,
+    isIdle,
+    isPending,
+    status,
+    error,
+    failureCount,
+    isSuccess,
+  };
+};
+
+export const useBulkUpsertFormField = () => {
+  const utils = trpc.useUtils();
+
+  const {
+    mutateAsync: bulkUpsertFormFieldAsync,
+    mutate: bulkUpsertFormField,
+    isError,
+    isIdle,
+    isPending,
+    status,
+    error,
+    failureCount,
+    isSuccess,
+  } = trpc.form.bulkUpsertFormField.useMutation({
+    onSuccess: async () => {
+      await utils.form.getFormField.invalidate();
+    },
+  });
+
+  return {
+    bulkUpsertFormFieldAsync,
+    bulkUpsertFormField,
     isError,
     isIdle,
     isPending,

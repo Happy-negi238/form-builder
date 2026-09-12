@@ -13,6 +13,25 @@ export const createFormFieldInput = z.object({
 
 export type CreateFormFieldInputType = z.infer<typeof createFormFieldInput>;
 
+export const formFieldBulkUpsertItemInput = z.object({
+  id: z.string().uuid().nullable().optional().describe("Field ID when updating, null or omitted when creating"),
+  label: z.string().min(2).max(70).describe("Label for the field"),
+  type: fieldTypeEnum.optional().default("TEXT").describe("Field type; defaults to TEXT when omitted"),
+  placeholder: z.string().max(70).optional().nullable().describe("Placeholder for the field"),
+  desc: z.string().max(100).optional().nullable().describe("Description of the field"),
+  description: z.string().max(100).optional().nullable().describe("Alias for desc"),
+  isRequired: z.boolean().default(false).optional().describe("Whether the field is required"),
+});
+
+export type FormFieldBulkUpsertItemInputType = z.infer<typeof formFieldBulkUpsertItemInput>;
+
+export const bulkUpsertFormFieldInput = z.object({
+  formId: z.string().describe("UUID of the form this field belongs to"),
+  fields: z.array(formFieldBulkUpsertItemInput).min(1).describe("Array of fields to upsert"),
+});
+
+export type BulkUpsertFormFieldInputType = z.infer<typeof bulkUpsertFormFieldInput>;
+
 export const updateFormFieldInput = z.object({
   label: z.string().min(2).max(70).describe("Label for the field"),
   type: fieldTypeEnum.describe("Form field enums"),
