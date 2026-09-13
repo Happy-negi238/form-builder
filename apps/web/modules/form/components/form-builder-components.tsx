@@ -61,11 +61,11 @@ function ToolField({
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform) }}
       className={[
-        "overflow-hidden transition-all",
+        "overflow-hidden transition-all rounded-md py-2.5",
         isSelected ? "border-primary/60 bg-accent/30" : "border-border bg-card",
       ].join(" ")}
     >
-      <CardHeader className="gap-2 px-3 flex">
+      <CardHeader className="gap-2 px-3 flex items-center">
         <button
           type="button"
           className="flex w-full items-center justify-between gap-3 text-left"
@@ -78,13 +78,13 @@ function ToolField({
             type="button"
             size="xs"
             variant="outline"
-            className="h-7"
+            className="h-8 w-14 rounded-sm"
             onClick={(event) => {
               event.stopPropagation()
               onAdd(type)
             }}
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
             Add
           </Button>
         </div>
@@ -127,7 +127,7 @@ function CanvasField({
       ref={combinedRef}
       style={{ transform: CSS.Translate.toString(transform) }}
       className={[
-        "w-full max-w-2xl shadow-sm transition-all",
+        "w-full max-w-2xl shadow-sm transition-all py-4",
         isSelected ? "border-primary/60 bg-accent/20" : "border-border bg-card",
         isDragging ? "opacity-60" : "opacity-100",
         isOver ? "ring-2 ring-ring/40" : "",
@@ -136,16 +136,20 @@ function CanvasField({
     >
       <CardHeader className="flex flex-row items-center justify-between gap-1 px-4">
         <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          <GripVertical className="h-4 w-4" {...attributes} {...listeners} />
+          <GripVertical className={`h-4 w-4 ${isDragging ? "cursor-grabbing" : "cursor-grab"}`} {...attributes} {...listeners} />
           {field.type}
         </div>
-        {isSelected ? <Badge variant="default">Selected</Badge> : null}
+        {field.required ? (
+          <Badge variant="destructive" className="rounded-sm px-2 py-1 text-[10px] uppercase tracking-widest">
+            Required
+          </Badge>
+        ) : null}
       </CardHeader>
 
       <CardContent className="space-y-3 px-4">
         <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">{field.label || "Label"}</label>
-          {field.description ? <p className="text-sm text-muted-foreground">{field.description}</p> : null}
+            <label className="text-sm font-medium text-foreground">{field.label || "Label"}</label>
+            {field.description ? <p className="text-sm text-muted-foreground">{field.description}</p> : null}
         </div>
 
         <div className="space-y-2">
@@ -153,15 +157,9 @@ function CanvasField({
             type={inputType}
             placeholder={field.placeholder || "Enter value"}
             disabled
-            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
           />
         </div>
-
-        {field.required ? (
-          <Badge variant="destructive" className="rounded-md px-2 py-1 text-[10px] uppercase tracking-[0.2em]">
-            Required
-          </Badge>
-        ) : null}
       </CardContent>
     </Card>
   )

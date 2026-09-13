@@ -11,8 +11,9 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
-import { MoveLeftIcon, Plus, Sparkles } from "lucide-react"
+import { Check, Copy, MoveLeftIcon, Plus, Sparkles } from "lucide-react"
 import Link from "next/link"
+import { QRCodeSVG } from "qrcode.react"
 
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
@@ -21,6 +22,7 @@ import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Separator } from "~/components/ui/separator"
 import { Textarea } from "~/components/ui/textarea"
+import { env } from "~/env"
 import {
   useBulkUpsertFormField,
   useCreatFormField,
@@ -49,6 +51,10 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
   const [fields, setFields] = useState<FormField[]>([])
   const [selectedFieldId, setSelectedFieldId] = useState<string>("")
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [rightPanel, setRightPanel] = useState<"fields" | "live">("fields")
+  const [liveLink, setLiveLink] = useState(`/form/${formId}`)
+  const [isLinkCopied, setIsLinkCopied] = useState(false)
+  const displayedLiveLink = liveLink.replace(/^https?:\/\//, "")
 
   const selectedField = useMemo(
     () => fields.find((field) => field.id === selectedFieldId) ?? fields[0] ?? null,
@@ -78,6 +84,18 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
       setSelectedFieldId(nextFields[0].id)
     }
   }, [formFields])
+
+  useEffect(() => {
+    const frontendUrl = (env.NEXT_PUBLIC_FRONTEND_URL ?? window.location.origin).replace(/\/$/, "")
+    setLiveLink(`${frontendUrl}/form/${formId}`)
+    setIsLinkCopied(false)
+  }, [formId])
+
+  const handleCopyLiveLink = async () => {
+    await navigator.clipboard.writeText(liveLink)
+    setIsLinkCopied(true)
+    window.setTimeout(() => setIsLinkCopied(false), 2000)
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -216,7 +234,8 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
   return (
     <main className="flex h-[calc(100vh-0rem)] flex-1 flex-col gap-6 p-4 bg-background text-foreground">
       <div className="flex items-center justify-between gap-4 px-1">
-        <Button asChild variant="secondary" size="sm" className="border border-border bg-background text-muted-foreground transition hover:text-foreground">
+        <Button asChild variant="secondary" size="sm" 
+        className="border border-border bg-background text-muted-foreground transition hover:text-foreground">
           <Link href="/dashboard/forms">
             <MoveLeftIcon className="h-4 w-4" />
             Back to forms
@@ -224,7 +243,7 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
         </Button>
       </div>
 
-      <div className="flex flex-1 min-h-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <div className="flex flex-1 min-h-0 overflow-hidden rounded-md border border-border bg-card shadow-sm">
         <aside className="w-65 border-r border-border bg-card p-5">
           <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Sparkles className="h-4 w-4" />
@@ -232,7 +251,7 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
           </div>
 
           <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
-            <div className="space-y-3">
+            <div className="space-y-4 mt-9">
               {supportedFields.map((field) => (
                 <ToolField
                   key={field.type}
@@ -247,7 +266,7 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
           </DndContext>
         </aside>
 
-        <section className="flex flex-1 flex-col bg-background p-6">
+        <section className="flex flex-1 flex-col bg-background py-6 px-10">
           <div className="mb-5 flex items-center justify-between gap-3">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Builder form</h1>
             {/* <Badge variant="secondary" className="rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.2em]">
@@ -259,7 +278,7 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
             <div
               ref={setCanvasDropRef}
               className={[
-                "flex h-full flex-col gap-4 rounded-2xl border border-dashed bg-muted/20 p-6 transition-colors",
+                "flex h-full flex-col gap-4 rounded-2xl transition-colors pb-9",
                 isCanvasOver ? "border-primary/60 bg-accent/20" : "border-border",
               ].join(" ")}
             >
@@ -278,14 +297,18 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
                     No fields yet. Drag a field here or click Add on the left.
                   </div>
                 ) : (
-                  fields.map((field) => (
-                    <CanvasField
-                      key={field.id}
-                      field={field}
-                      isSelected={selectedField?.id === field.id}
-                      onSelect={setSelectedFieldId}
-                    />
-                  ))
+                  <div className="space-y-5">
+                    {
+                      fields.map((field) => (
+                        <CanvasField
+                          key={field.id}
+                          field={field}
+                          isSelected={selectedField?.id === field.id}
+                          onSelect={setSelectedFieldId}
+                        />
+                      ))
+                    }
+                  </div>
                 )}
               </div>
             </div>
@@ -294,24 +317,70 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
 
         <aside className="w-[320px] border-l border-border bg-card p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">Field settings</h2>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={isBulkSaving}
-              onClick={handleSaveFields}
-            >
-              {isBulkSaving ? "Saving..." : "Save"}
-            </Button>
+            <div className="flex items-center gap-1 rounded-sm border border-border bg-muted/30 p-0.5">
+              <Button
+                variant={rightPanel === "fields" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setRightPanel("fields")}
+                className="rounded-sm  text-sm font-medium transition"
+              >
+                Fields
+              </Button>
+              <Button
+                variant={rightPanel === "live" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setRightPanel("live")}
+              >
+                Live
+              </Button>
+            </div>
+            {rightPanel === "fields" && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isBulkSaving}
+                onClick={handleSaveFields}
+                className="border border-border transition hover:text-foreground rounded-sm"
+              >
+                {isBulkSaving ? "Saving..." : "Save"}
+              </Button>
+            )}
           </div>
 
           <Separator className="mb-4" />
 
-          {selectedField ? (
+          {rightPanel === "live" ? (
             <div className="space-y-5">
-              <div className="rounded-xl border border-border bg-muted/30 p-3">
-                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Selected type</div>
-                <div className="mt-2 text-xl font-medium uppercase text-foreground">{selectedField.type}</div>
+              <div className="flex justify-center rounded-md border border-border bg-white p-4">
+                <QRCodeSVG value={liveLink} size={200} />
+              </div>
+              <div className="flex items-center gap-2 rounded-md border border-border bg-background p-2">
+                <Link
+                  href={`/form/${formId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={liveLink}
+                  className="min-w-0 flex-1 truncate text-sm text-primary underline underline-offset-4"
+                >
+                  {displayedLiveLink}
+                </Link>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCopyLiveLink}
+                  aria-label={isLinkCopied ? "Live link copied" : "Copy live link"}
+                  title={isLinkCopied ? "Copied" : "Copy live link"}
+                >
+                  {isLinkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          ) : selectedField ? (
+            <div className="space-y-5">
+              <div className="rounded-md border border-border bg-muted/30 p-3">
+                <div className="text-xs uppercase text-muted-foreground">Selected type</div>
+                <div className="mt-2 text-lg font-medium capitalize text-foreground">{selectedField.type}</div>
               </div>
 
               <div className="space-y-2">
@@ -322,7 +391,7 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
                   id="field-label"
                   value={selectedField.label}
                   onChange={(event) => handleUpdateField(selectedField.id, { label: event.target.value })}
-                  className="border-input bg-background text-foreground placeholder:text-muted-foreground"
+                  className="border-input bg-background text-foreground rounded-sm placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -334,7 +403,7 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
                   id="field-description"
                   value={selectedField.description}
                   onChange={(event) => handleUpdateField(selectedField.id, { description: event.target.value })}
-                  className="min-h-25 border-input bg-background text-foreground placeholder:text-muted-foreground"
+                  className="min-h-25 border-input bg-background rounded-sm text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -346,11 +415,11 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
                   id="field-placeholder"
                   value={selectedField.placeholder}
                   onChange={(event) => handleUpdateField(selectedField.id, { placeholder: event.target.value })}
-                  className="border-input bg-background text-foreground placeholder:text-muted-foreground"
+                  className="border-input bg-background text-foreground rounded-sm placeholder:text-muted-foreground"
                 />
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3">
+              <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 p-3">
                 <div>
                   <div className="text-sm font-medium text-foreground">Required</div>
                   <div className="text-xs text-muted-foreground">Make this field mandatory</div>
@@ -370,7 +439,7 @@ export function FormBuilderLayout({ formId }: { formId: string }) {
               />
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+            <div className="rounded-md border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
               Select a field to edit its properties.
             </div>
           )}

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import {
   closestCenter,
@@ -23,9 +23,19 @@ import { CSS } from "@dnd-kit/utilities"
 import { ArrowUpRight, Eye, GripVertical, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
-import { useDeleteForm, useListForm } from "~/hooks/api/form"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
+import { useDeleteForm, useListForm } from "~/hooks/api/form"
 import {
   Table,
   TableBody,
@@ -48,10 +58,11 @@ type FormTableRow = {
 
 function FormActionsCell({ form }: { form: FormTableRow }) {
   const { deleteFormAsync, isPending: isDeletePending } = useDeleteForm()
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this form?")) return
-    await deleteFormAsync({ id })
+  const handleDelete = async () => {
+    await deleteFormAsync({ id: form.id })
+    setIsDeleteDialogOpen(false)
     toast.success("Form deleted")
   }
 
@@ -70,7 +81,7 @@ function FormActionsCell({ form }: { form: FormTableRow }) {
         size="icon"
         title="Delete form"
         aria-label={`Delete ${form.title}`}
-        onClick={() => handleDelete(form.id)}
+        onClick={() => setIsDeleteDialogOpen(true)}
         disabled={isDeletePending}
         className="size-7"
       >
@@ -86,6 +97,22 @@ function FormActionsCell({ form }: { form: FormTableRow }) {
       >
         <ArrowUpRight className="size-4" />
       </Button>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this form?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &quot;{form.title}&quot; and its submissions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletePending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeletePending}>
+              {isDeletePending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -152,10 +179,10 @@ function SortableRow({ row }: { row: FormTableRow }) {
 }
 
 export function DataTable({ data: initialData }: { data: FormTableRow[] }) {
-  
-  const [data, setData] = React.useState<FormTableRow[]>(() => initialData)
 
-  React.useEffect(() => {
+  const [data, setData] = useState<FormTableRow[]>(() => initialData)
+
+  useEffect(() => {
     setData(initialData)
   }, [initialData])
 
@@ -165,7 +192,7 @@ export function DataTable({ data: initialData }: { data: FormTableRow[] }) {
     // useSensor(KeyboardSensor, {})
   )
 
-  const dataIds = React.useMemo<UniqueIdentifier[]>(() => data.map(({ id }) => id), [data])
+  const dataIds = useMemo<UniqueIdentifier[]>(() => data.map(({ id }) => id), [data])
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event

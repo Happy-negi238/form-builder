@@ -8,15 +8,15 @@ const Submissions = async ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
 
-    <main className="flex flex-1 flex-col gap-6 p-6">
+    <main className="flex flex-1 flex-col gap-6 p-6 max-w-7xl mx-auto">
       <div>
-        <Button asChild variant="secondary" size="sm" className="bg-transparent text-muted-foreground hover:text-white transition">
+        <Button asChild variant="secondary" size="sm"
+          className="border border-border bg-background text-foreground transition hover:text-foreground">
           <Link href="/dashboard/forms"><MoveLeftIcon /> Back to forms</Link>
         </Button>
       </div>
       <div className="">
         <div className="mt-2 flex flex-col gap-4">
-          <h1 className="text-2xl font-semibold">Submissions</h1>
           <FormSubmissionList formId={id} />
         </div>
       </div>

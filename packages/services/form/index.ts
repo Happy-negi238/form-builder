@@ -228,16 +228,23 @@ class FormService {
   }
 
   public async deleteFormById(id: string, userId: string) {
-    const deletedForms = await db
-      .delete(formsTable)
-      .where(and(eq(formsTable.id, id), eq(formsTable.userId, userId)))
-      .returning({ id: formsTable.id });
+    return db.transaction(async (tx) => {
+      const forms = await tx
+        .select({ id: formsTable.id })
+        .from(formsTable)
+        .where(and(eq(formsTable.id, id), eq(formsTable.userId, userId)))
+        .limit(1);
 
-    if (deletedForms.length === 0) {
-      throw new Error("Form not found");
-    }
+      if (forms.length === 0) {
+        throw new Error("Form not found");
+      }
 
-    return { id };
+      await tx.delete(formSubmission).where(eq(formSubmission.formId, id));
+      await tx.delete(formField).where(eq(formField.formId, id));
+      await tx.delete(formsTable).where(eq(formsTable.id, id));
+
+      return { id };
+    });
   }
 }
 
