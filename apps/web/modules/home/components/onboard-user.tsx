@@ -1,6 +1,7 @@
 "use client"
 import { UserButton } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react'
+import { env } from '~/env';
 import { useCreateUser } from '~/hooks/api/auth/use-create-user';
 import { AuthenticatedUser, onBoardUser } from '~/modules/authentication/actions';
 
@@ -22,13 +23,14 @@ const OnboardUser = () => {
         setUser(userData);
 
         const { clerkId, emailAddresses, firstName, imageUrl, lastName } = userData;
+
         const { id } = await createUserWithClerkIdAsync({
           clerkId,
           email: emailAddresses,
           firstName,
           lastName,
           profileImageUrl: imageUrl,
-          role: "USER",
+          role: emailAddresses === env.NEXT_PUBLIC_ADMIN_EMAIL_ONE ? "ADMIN" : "USER",
         });
 
         setUserId(id);

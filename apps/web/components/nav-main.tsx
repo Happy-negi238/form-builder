@@ -29,6 +29,7 @@ export function NavMain({
           <SidebarMenuItem className="flex items-center gap-2">
             <SidebarMenuButton
               tooltip="Quick Create"
+              className="px-0"
             >
               {/* <IconCirclePlusFilled /> */}
               <CreateForm />

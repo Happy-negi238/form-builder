@@ -1,0 +1,1 @@
+ALTER TABLE "template_field" DROP COLUMN "values";

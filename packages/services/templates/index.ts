@@ -1,11 +1,13 @@
-import db, { eq } from "@repo/database";
+import db, { desc, eq } from "@repo/database";
 import {
   createTemplateInput,
   CreateTemplateInputType,
   DeleteTemplateInputType,
   deleteTemplateInput,
+  GetTemplateByIdInputType,
+  getTemplateByIdInput,
 } from "./model";
-import { templatesTable } from "@repo/database/schema";
+import { templateFieldTable, templatesTable } from "@repo/database/schema";
 
 class TemplateService {
   public async createTemplate(payload: CreateTemplateInputType) {
@@ -21,6 +23,56 @@ class TemplateService {
     }
 
     return { id: insertTemplate[0].id };
+  }
+
+  public async getAllTemplates() {
+    const templates = await db
+      .select()
+      .from(templatesTable)
+      .orderBy(desc(templatesTable.createdAt));
+
+    if (!templates || templates.length === 0) {
+      throw new Error("No templates found");
+    }
+
+    return templates;
+  }
+
+  public async getTemplateById(payload: GetTemplateByIdInputType) {
+    const { templateId } = await getTemplateByIdInput.parseAsync(payload);
+
+    // Use left join to fetch the template along with its fields
+    const template = await db
+      .select({
+        id: templatesTable.id,
+        title: templatesTable.title,
+        description: templatesTable.description,
+        fields: {
+          id: templateFieldTable.id,
+          label: templateFieldTable.label,
+          description: templateFieldTable.description,
+          isRequired: templateFieldTable.isRequired,
+          type: templateFieldTable.type,
+        },
+      })
+      .from(templatesTable)
+      .leftJoin(templateFieldTable, eq(templateFieldTable.templateId, templatesTable.id))
+      .where(eq(templatesTable.id, templateId));
+
+    if (!template || template.length === 0) {
+      throw new Error("Template not found");
+    }
+    // Group fields by template ID
+    const { id, title, description } = template[0]!;
+
+    const fields = template.flatMap((row) => (row.fields ? [row.fields] : []));
+
+    return {
+      id,
+      title,
+      description,
+      fields,
+    };
   }
 
   public async deleteTemplate(payload: DeleteTemplateInputType) {

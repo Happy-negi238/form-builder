@@ -1,0 +1,2 @@
+CREATE TYPE "public"."template_field_type_enum" AS ENUM('TEXT', 'EMAIL', 'PASSWORD', 'NUMBER', 'YES_NO');--> statement-breakpoint
+ALTER TABLE "template_field" ADD COLUMN "type" "template_field_type_enum" NOT NULL;

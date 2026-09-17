@@ -1,0 +1,1 @@
+ALTER TABLE "template_field" ADD COLUMN "is_required" boolean DEFAULT false NOT NULL;

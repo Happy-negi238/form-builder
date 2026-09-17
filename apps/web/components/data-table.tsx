@@ -208,7 +208,7 @@ export function DataTable({ data: initialData }: { data: FormTableRow[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border @container/card">
+    <div className="overflow-hidden rounded border @container/card">
       <DndContext
         collisionDetection={closestCenter}
         modifiers={[restrictToVerticalAxis]}

@@ -125,7 +125,7 @@ export function ChartAreaInteractive({
 
   if (isPending) {
     return (
-      <Card className="@container/card">
+      <Card className="@container/card rounded-md">
         <CardContent className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">
           Loading form analytics...
         </CardContent>
@@ -135,7 +135,7 @@ export function ChartAreaInteractive({
 
   if (isError) {
     return (
-      <Card className="@container/card">
+      <Card className="@container/card rounded-md">
         <CardContent className="flex h-[250px] items-center justify-center text-sm text-destructive">
           {error?.message ?? "Could not load form analytics."}
         </CardContent>
@@ -145,7 +145,7 @@ export function ChartAreaInteractive({
 
   if (!pieData.length) {
     return (
-      <Card className="@container/card">
+      <Card className="@container/card rounded-md">
         <CardContent className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">
           No form activity yet.
         </CardContent>
@@ -154,7 +154,7 @@ export function ChartAreaInteractive({
   }
 
   return (
-    <Card className="@container/card">
+    <Card className="@container/card rounded-md">
       <CardHeader>
         <CardTitle>Form Status Distribution</CardTitle>
         <CardDescription>
