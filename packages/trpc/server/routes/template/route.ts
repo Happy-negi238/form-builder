@@ -1,4 +1,4 @@
-import { templateFieldService, templateService } from "../../services";
+import { importTemplateToFormService, templateFieldService, templateService } from "../../services";
 import { adminAuthenticateProcedure, authenticationProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import {
@@ -14,12 +14,37 @@ import {
   getAllTemplatesOutputModel,
   getTemplateByIdInputModel,
   getTemplateByIdOutputModel,
+  insertTemplateDataToFormInputModel,
+  insertTemplateDataToFormOutputModel,
 } from "./model";
 
 const TAGS = ["Authentication", "Admin"];
 const getPath = generatePath("/authentication");
 
 export const templateRouter = router({
+  // Template to from route
+  insertTemplateDataToForm: authenticationProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        tags: TAGS,
+        path: getPath("/insertTemplateDataToForm"),
+      },
+    })
+    .input(insertTemplateDataToFormInputModel)
+    .output(insertTemplateDataToFormOutputModel)
+    .mutation(async ({ input, ctx }) => {
+      const { templateId, ...formData } = input;
+      const { userId } = ctx;
+
+      const result = await importTemplateToFormService.InsertTemplateDataToForm({
+        templateId,
+        ...formData,
+        userId,
+      });
+      return result;
+    }),
+
   // Template routes
   createTemplate: adminAuthenticateProcedure
     .meta({

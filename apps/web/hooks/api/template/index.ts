@@ -1,5 +1,30 @@
 import { trpc } from "~/trpc/client";
 
+// Template to form hook
+export const useInsertTemplateDataToForm = () => {
+  const {
+    mutateAsync: insertTemplateDataToFormAsync,
+    mutate: insertTemplateDataToForm,
+    isPending,
+    isError,
+    error,
+    isIdle,
+    isSuccess,
+    failureCount,
+  } = trpc.template.insertTemplateDataToForm.useMutation();
+
+  return {
+    insertTemplateDataToFormAsync,
+    insertTemplateDataToForm,
+    isPending,
+    isError,
+    error,
+    isIdle,
+    isSuccess,
+    failureCount,
+  };
+};
+
 // Template hooks
 export const useCreateTemplate = () => {
   const {
