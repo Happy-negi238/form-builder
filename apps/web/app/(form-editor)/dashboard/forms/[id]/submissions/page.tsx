@@ -1,9 +1,11 @@
 import { MoveLeftIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '~/components/ui/button';
+import { requireAuth } from '~/modules/authentication/actions';
 import FormSubmissionList from '~/modules/form/components/form-submission-list';
 
 const Submissions = async ({ params }: { params: Promise<{ id: string }> }) => {
+  await requireAuth();
   const { id } = await params;
 
   return (

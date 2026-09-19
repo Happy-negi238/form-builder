@@ -9,11 +9,11 @@ import { formSubmission } from "@repo/database/schema";
 
 class FormSubmissionService {
   public async formSubmission(payload: FormSubmissionInputType) {
-    const { formId, values } = await formSubmissionInput.parseAsync(payload);
+    const { formId, values, fingerPrint } = await formSubmissionInput.parseAsync(payload);
 
     const result = await db
       .insert(formSubmission)
-      .values({ formId, values })
+      .values({ formId, values, fingerprint: fingerPrint })
       .returning({ formSubmissionId: formSubmission.id });
 
     if (result.length === 0 || !result[0]?.formSubmissionId) {

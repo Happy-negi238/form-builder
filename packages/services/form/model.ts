@@ -32,6 +32,7 @@ export type CreateFormInputType = z.infer<typeof createFormInput>;
 
 export const getFromByIdInput = z.object({
   formId: z.string().describe("Id of the form"),
+  fingerPrint: z.string().describe("fingerprint of the user"),
 });
 
 export type GetFromByIdInputType = z.infer<typeof getFromByIdInput>;

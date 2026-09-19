@@ -39,11 +39,6 @@ const data = {
       url: "/dashboard/templates",
       icon: IconFolder,
     },
-    {
-      title: "Responses",
-      url: "/dashboard/responses",
-      icon: IconListDetails,
-    },
   ],
 }
 

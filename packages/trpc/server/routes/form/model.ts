@@ -5,6 +5,7 @@ const fieldTypeEnum = z.enum(["TEXT", "EMAIL", "PASSWORD", "NUMBER", "YES_NO"]);
 
 export const getFromByIdInputModel = z.object({
   formId: z.string().describe("Id of the form"),
+  fingerPrint: z.string().describe("fingerprint of the user"),
 });
 
 export const getFormFieldOutputObject = z.object({
@@ -206,6 +207,7 @@ export const formSubmissionInputObject = z.object({
 
 export const formSubmissionInputModel = z.object({
   formId: z.string().describe("UUID of the form"),
+  fingerPrint: z.string().describe("Fingerprint of the user submitting the form"),
   values: z.array(formSubmissionInputObject).min(1, "At least one field is required"),
 });
 

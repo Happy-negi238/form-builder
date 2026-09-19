@@ -7,6 +7,7 @@ export const formSubmissionObject = z.object({
 
 export const formSubmissionInput = z.object({
   formId: z.string().describe("UUID of the form"),
+  fingerPrint: z.string().describe("Fingerprint of the user submitting the form"),
   values: z.array(formSubmissionObject).min(1, "At least one field is required"),
 });
 

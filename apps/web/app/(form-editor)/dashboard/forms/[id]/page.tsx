@@ -1,3 +1,4 @@
+import { requireAuth } from "~/modules/authentication/actions";
 import { FormBuilderLayout } from "~/modules/form/components/form-builder-layout"
 
 export default async function FormBuilderPage({
@@ -5,7 +6,9 @@ export default async function FormBuilderPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
+  await requireAuth();
+
+  const { id } = await params;
 
   return <FormBuilderLayout formId={id} />
 }

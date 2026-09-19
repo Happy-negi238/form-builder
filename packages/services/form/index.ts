@@ -86,7 +86,19 @@ class FormService {
   }
 
   public async getFromById(payload: GetFromByIdInputType) {
-    const { formId } = await getFromByIdInput.parseAsync(payload);
+    const { formId, fingerPrint } = await getFromByIdInput.parseAsync(payload);
+
+    const existingSubmission = await db
+      .select({
+        id: formSubmission.id,
+      })
+      .from(formSubmission)
+      .where(and(eq(formSubmission.formId, formId), eq(formSubmission.fingerprint, fingerPrint)))
+      .limit(1);
+
+    if (existingSubmission.length > 0) {
+      throw new Error("You have already submitted this form");
+    }
 
     const result = await db
       .select({

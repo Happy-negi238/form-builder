@@ -44,10 +44,10 @@ export const formRouter = router({
     .input(getFromByIdInputModel)
     .output(getFromByIdOuputModel)
     .query(async ({ input }) => {
-      const { formId } = input;
+      const { formId, fingerPrint } = input;
 
       const { id, createdAt, description, title, updatedAt, fields, expireAt, isPrivate, status } =
-        await formService.getFromById({ formId });
+        await formService.getFromById({ formId, fingerPrint });
 
       return { id, createdAt, description, title, updatedAt, fields, expireAt, isPrivate, status };
     }),
@@ -244,9 +244,9 @@ export const formRouter = router({
     .input(formSubmissionInputModel)
     .output(formSubmissionOuputModel)
     .mutation(async ({ input }) => {
-      const { formId, values } = input;
+      const { formId, values, fingerPrint } = input;
 
-      const { formSubmissionId } = await formSubmissionService.formSubmission({ formId, values });
+      const { formSubmissionId } = await formSubmissionService.formSubmission({ formId, values, fingerPrint });
       return { formSubmissionId };
     }),
 

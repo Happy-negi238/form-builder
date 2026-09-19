@@ -1,0 +1,1 @@
+ALTER TABLE "form_submissons" ADD COLUMN "fingerprint" text NOT NULL;

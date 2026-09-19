@@ -1,22 +1,27 @@
 import { trpc } from "~/trpc/client";
 
 // FORM HOOKS
-export const useGetFromById = (formId: string) => {
+export const useGetFromById = (formId: string, fingerPrint: string) => {
   const {
     data: getFromByIdData,
     isPending,
     isError,
+    error,
     isFetched,
     isFetching,
     status,
     isSuccess,
     failureCount,
-  } = trpc.form.getFromById.useQuery({ formId });
+  } = trpc.form.getFromById.useQuery(
+    { formId, fingerPrint },
+    { enabled: Boolean(formId && fingerPrint) },
+  );
 
   return {
     getFromByIdData,
     isPending,
     isError,
+    error,
     isFetched,
     isFetching,
     status,
